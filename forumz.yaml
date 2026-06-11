@@ -1,0 +1,6 @@
+enabled: false
+auto_approve: true
+api_route: api/forumz
+scan_mforum_boards: true
+mambers_identity_bridge: true
+boards: {}

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forumz — flat-file forums for Grav</title>
+  <meta name="description" content="FREE Forumz Lite (MIT) for Grav — boards, threads, profiles, moderation. No database. Admin2 + EvvyTink board CRUD. Optional Mambers bridge.">
+  <meta property="og:title" content="Forumz — Forums on Grav">
+  <meta property="og:description" content="Flat-file boards. No Discourse rent. Groundswell not fork.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0a18;
+      --fg: #f0e8ff;
+      --muted: #a898c8;
+      --purple: #7b5cff;
+      --purple-glow: rgba(123, 92, 255, 0.45);
+      --teal: #2dd4bf;
+      --violet: #c084fc;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(123, 92, 255, 0.22);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 55% at 20% -5%, rgba(123, 92, 255, 0.32), transparent 55%),
+        radial-gradient(ellipse 65% 50% at 95% 15%, rgba(45, 212, 191, 0.18), transparent 50%),
+        radial-gradient(ellipse 70% 55% at 50% 100%, rgba(192, 132, 252, 0.15), transparent 55%),
+        linear-gradient(180deg, #1a1028 0%, var(--bg) 42%, #080510 100%);
+      z-index: -2;
+      animation: skyShift 20s ease-in-out infinite alternate;
+    }
+    @keyframes skyShift {
+      0% { filter: hue-rotate(0deg) brightness(1); }
+      100% { filter: hue-rotate(10deg) brightness(1.06); }
+    }
+    .grain {
+      position: fixed;
+      inset: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: -1;
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.5rem;
+      backdrop-filter: blur(14px);
+      background: rgba(15, 10, 24, 0.78);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+      color: var(--fg);
+    }
+    .logo span { color: var(--teal); }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-fire {
+      background: linear-gradient(135deg, var(--purple), #9333ea);
+      color: #fff;
+      box-shadow: 0 0 28px var(--purple-glow);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px var(--purple-glow); }
+      50% { box-shadow: 0 0 36px rgba(147, 51, 234, 0.55); }
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .btn-mint {
+      background: linear-gradient(135deg, #0d9488, var(--teal));
+      color: #042f2e;
+    }
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 3rem;
+      text-align: center;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--teal);
+    }
+    .pill.hot { color: var(--violet); border-color: rgba(192, 132, 252, 0.35); }
+    .forum-icon {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      animation: floatForum 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(123, 92, 255, 0.5));
+    }
+    @keyframes floatForum {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.4rem, 8vw, 4.2rem);
+      font-weight: 700;
+      line-height: 1.05;
+      margin: 0 0 1rem;
+      letter-spacing: -0.03em;
+    }
+    h1 .gradient {
+      background: linear-gradient(135deg, var(--purple), var(--violet), var(--teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      color: var(--muted);
+      max-width: 680px;
+      margin: 0 auto 1.25rem;
+    }
+    .hero-quote {
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--teal);
+      margin-bottom: 2rem;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+    .ticker-wrap {
+      overflow: hidden;
+      border-block: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      padding: 0.65rem 0;
+      margin: 2.5rem 0 0;
+    }
+    .ticker {
+      display: flex;
+      gap: 3rem;
+      animation: ticker 30s linear infinite;
+      white-space: nowrap;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    section { max-width: 1100px; margin: 0 auto; padding: 3.5rem 1.5rem; }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.25rem);
+      margin: 0 0 1rem;
+      letter-spacing: -0.02em;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .stat {
+      text-align: center;
+      padding: 1.25rem 0.75rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+    .stat b {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--purple), var(--teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .stat span { font-size: 0.82rem; color: var(--muted); }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .feature {
+      padding: 1.35rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: var(--card);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature:hover {
+      border-color: rgba(123, 92, 255, 0.45);
+      transform: translateY(-2px);
+    }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .feature h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      margin: 0 0 0.5rem;
+    }
+    .feature p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    .chip {
+      font-size: 0.78rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+    }
+    .chip.ok { color: var(--teal); border-color: rgba(45, 212, 191, 0.35); }
+    .terminal {
+      margin-top: 1.25rem;
+      padding: 1.25rem 1.35rem;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.45);
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .terminal .prompt { color: var(--teal); }
+    .terminal .cmd { color: var(--fg); }
+    .terminal .comment { display: block; color: var(--muted); }
+    footer {
+      text-align: center;
+      padding: 3rem 1.5rem 4rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    footer a { color: var(--purple); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    @media (max-width: 600px) {
+      .nav-links .btn-ghost { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <a class="logo" href="#">💬 Forum<span>z</span></a>
+    <div class="nav-links">
+      <a class="btn btn-ghost" href="#features">Features</a>
+      <a class="btn btn-ghost" href="#install">Install</a>
+      <a class="btn btn-fire" href="https://github.com/GravMUD/grav-plugin-forumz/releases">Get it FREE</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="pill-row">
+      <span class="pill hot">MIT Lite · Free forever</span>
+      <span class="pill">Grav 1.7 / 2.0</span>
+      <span class="pill">v1.0.1</span>
+      <span class="pill">Team DC</span>
+    </div>
+    <span class="forum-icon" aria-hidden="true">💬</span>
+    <h1>Run the<br><span class="gradient">flat-file forum</span></h1>
+    <p class="hero-sub"><strong>Forumz</strong> — boards, threads, profiles, and moderation on Grav. JSON under <code>user/data/forumz/</code>. No database. No Discourse rent. Optional Mambers identity bridge across the Social Stack.</p>
+    <p class="hero-quote">"Groundswell not fork — village forums around the Grav castle."</p>
+    <div class="hero-actions">
+      <a class="btn btn-fire" href="https://github.com/GravMUD/grav-plugin-forumz">⭐ Star on GitHub</a>
+      <a class="btn btn-mint" href="https://github.com/GravMUD/grav-plugin-forumz/releases/download/1.0.1/grav-plugin-forumz.zip">Download 1.0.1</a>
+      <a class="btn btn-ghost" href="https://gravfans.live/forum">See it live · GetGRAV!</a>
+    </div>
+    <div class="ticker-wrap" aria-hidden="true">
+      <div class="ticker">
+        <span>flat-file json</span><span>·</span><span>board crud admin2</span><span>·</span><span>evvytink parity</span><span>·</span><span>.mforum scanner</span><span>·</span><span>mambers bridge</span><span>·</span><span>moderation queue</span><span>·</span><span>bundled css js</span><span>·</span><span>grav api bridge</span><span>·</span><span>optional mud fences</span><span>·</span>
+        <span>flat-file json</span><span>·</span><span>board crud admin2</span><span>·</span><span>evvytink parity</span><span>·</span><span>.mforum scanner</span><span>·</span><span>mambers bridge</span><span>·</span><span>moderation queue</span><span>·</span><span>bundled css js</span><span>·</span><span>grav api bridge</span><span>·</span><span>optional mud fences</span><span>·</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <p class="section-label">The numbers don't lie</p>
+    <h2>One plugin. Full forum stack.</h2>
+    <div class="stats">
+      <div class="stat"><b>0</b><span>SQL databases</span></div>
+      <div class="stat"><b>3</b><span>post policies</span></div>
+      <div class="stat"><b>2</b><span>admin UIs</span></div>
+      <div class="stat"><b>$0</b><span>Lite MIT forever</span></div>
+    </div>
+  </section>
+
+  <section id="features">
+    <p class="section-label">Why it hits different</p>
+    <h2>Not another hosted forum invoice.</h2>
+    <div class="grid-3">
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <h3>Boards your way</h3>
+        <p>YAML config, <code>.mforum</code> page files, or Admin2 / EvvyTink board CRUD. Create, edit, delete without hand-editing yaml if you don't want to.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧵</div>
+        <h3>Threads + replies</h3>
+        <p>Flat JSON per board. Pin, lock, approve queue. Public REST API for headless or bundled <code>forumz.js</code> embed on any page.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">👤</div>
+        <h3>Profiles + auth</h3>
+        <p>Register, login, session cookies — or bridge Grav Login via Mambers for one username across Messenger, Forumz, and Eventz.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>Moderation cockpit</h3>
+        <p>Admin2 panel at <code>/plugin/forumz</code>. EvvyTink at <code>/mud-admin</code> → Forumz. Queue, ban profiles, manage boards.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧱</div>
+        <h3>Standard Grav first</h3>
+        <p>Works on any Grav site. Optional <code>:::forum</code> fences when grav-mud-alpha is installed — GravMUD is a bonus lane, not a requirement.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔗</div>
+        <h3>Social Stack ready</h3>
+        <p>Pairs with Mambers (identity), Messenger (DMs), Eventz (meetups). Same flat-file philosophy — mortals on shared hosting welcome.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">Groundswell not fork</p>
+    <h2>We extend Grav. We don't compete with core.</h2>
+    <p style="color:var(--muted)">Lite ships today — boards, threads, profiles, bundled UI, Admin2 moderation + board management. Pro roadmap (commercial) adds attachments and advanced moderation — not required for the free GPM entry.</p>
+    <div class="chip-row">
+      <span class="chip ok">✓ yaml + .mforum boards</span>
+      <span class="chip ok">✓ admin2 board crud</span>
+      <span class="chip ok">✓ evvytink parity</span>
+      <span class="chip ok">✓ mambers identity bridge</span>
+      <span class="chip ok">✓ grav 2 api bridge</span>
+      <span class="chip ok">✓ auto_approve or queue</span>
+    </div>
+  </section>
+
+  <section id="install">
+    <p class="section-label">Ship it</p>
+    <h2>Install in sixty seconds.</h2>
+    <div class="terminal">
+      <span class="prompt">grav $</span> <span class="cmd">bin/gpm direct-install https://github.com/GravMUD/grav-plugin-forumz/releases/download/1.0.1/grav-plugin-forumz.zip</span>
+      <span class="comment"># bin/grav cache</span>
+      <span class="comment"># Enable in Admin → Plugins → Forumz</span>
+      <span class="comment"># Admin2: /plugin/forumz → Boards tab → create a board</span>
+      <span class="comment"># Embed: &lt;div class="forumz" data-forumz data-mode="board" data-board="general" data-api="/api/forumz"&gt;&lt;/div&gt;</span>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>FutureVision Labs · Team DC · GravMUD</strong></p>
+    <p>
+      <a href="https://github.com/GravMUD/grav-plugin-forumz">GitHub</a> ·
+      <a href="https://github.com/GravMUD/grav-plugin-forumz/discussions">Discussions</a> ·
+      <a href="https://mambers.gravmud.site">Mambers</a> ·
+      <a href="https://javabean.gravmud.site">JavaBean</a> ·
+      <a href="https://gravfans.live">GetGRAV!</a> ·
+      <a href="https://gravmud.site">GravMUD HQ</a>
+    </p>
+    <p style="margin-top:1rem;font-size:0.78rem">MIT Lite · groundswell not fork · flat-file pros who also click buttons</p>
+  </footer>
+</body>
+</html>

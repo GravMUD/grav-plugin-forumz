@@ -1,0 +1,65 @@
+name: Forumz
+slug: forumz
+type: plugin
+version: 1.0.1
+description: Flat-file forum boards, profiles, and moderation for Grav — no database, no Discourse rent. Lite MIT edition works on standard Grav; optional GravMUD fences when grav-mud-alpha is installed.
+icon: comments
+author:
+  name: FutureVision Labs · Team DC
+  email: chief@gravmud.site
+  url: https://gravmud.site
+homepage: https://forumz.gravmud.site
+bugs: https://github.com/GravMUD/grav-plugin-forumz/discussions
+docs: https://forumz.gravmud.site
+keywords: grav, forum, flat-file, community, boards, profiles, admin2
+license: MIT
+compatibility:
+  grav: ['1.7', '2.0']
+dependencies:
+  - { name: grav, version: '>=1.7.0' }
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: Plugin Status
+      highlight: 1
+      default: 0
+      options:
+        1: Enabled
+        0: Disabled
+      validate:
+        type: bool
+    auto_approve:
+      type: toggle
+      label: Auto-approve posts
+      highlight: 1
+      default: 1
+      help: When off, threads and replies queue for moderation (Admin2 / EvvyTink panel when installed).
+      validate:
+        type: bool
+    api_route:
+      type: text
+      label: API route prefix
+      default: api/forumz
+      help: JSON API base path (boards, threads, thread, reply).
+    scan_mforum_boards:
+      type: toggle
+      label: Scan .mforum board files
+      highlight: 1
+      default: 1
+      help: Load boards from user/pages/**/*.mforum (YAML config overrides by board id).
+      validate:
+        type: bool
+    mambers_identity_bridge:
+      type: toggle
+      label: Mambers / Grav Login identity bridge
+      highlight: 1
+      default: 1
+      help: When Mambers is enabled, registered boards accept Grav Login session (one username across the social stack).
+      validate:
+        type: bool
+    boards:
+      type: array
+      label: Board definitions
+      help: Board id => title, description, post_policy (open | registered | moderators).
