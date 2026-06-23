@@ -1,5 +1,11 @@
 # Changelog — Forumz
 
+## 1.0.2 — 2026-06-23 (PHP 8.3+ static events fix)
+
+### Fixed
+
+- **`getSubscribedEvents()`** — use `self::mudAlphaAvailable()` instead of `$this` in static context (fatal on PHP 8.3+)
+
 ## 1.0.1 — 2026-06-12 (Admin2 board CRUD)
 
 ### Added

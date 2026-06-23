@@ -1,7 +1,7 @@
 name: Forumz
 slug: forumz
 type: plugin
-version: 1.0.1
+version: 1.0.2
 description: Flat-file forum boards, profiles, and moderation for Grav — no database, no Discourse rent. Lite MIT edition works on standard Grav; optional GravMUD fences when grav-mud-alpha is installed.
 icon: comments
 author:

@@ -23,7 +23,7 @@ class ForumzPlugin extends Plugin
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
         ];
 
-        if ($this->mudAlphaAvailable()) {
+        if (self::mudAlphaAvailable()) {
             $events['onMudFenceRender'] = ['onMudFenceRender', 0];
         }
 
@@ -260,10 +260,8 @@ class ForumzPlugin extends Plugin
         return class_exists(\Grav\Plugin\Api\ApiRouteCollector::class);
     }
 
-    private function mudAlphaAvailable(): bool
+    private static function mudAlphaAvailable(): bool
     {
-        $dir = $this->grav['locator']->findResource('plugins://grav-mud-alpha');
-
-        return is_string($dir) && is_dir($dir);
+        return is_dir(__DIR__ . '/../grav-mud-alpha');
     }
 }
